@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Llucs/Llucs-Hub/refs/heads/main/banner.png" alt="SpeedCool Banner" />
+</p>
+
 # 🚀 Llucs Hub
 
 **Llucs Hub** is a powerful custom command hub for Roblox, inspired by the legendary [**Infinity Yield**](https://github.com/EdgeIY/infiniteyield), but upgraded with **exclusive features**, **anti-ban system**, and a cleaner structure developed by **Leandro Lucas (Llucs)**.
