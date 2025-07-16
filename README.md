@@ -67,7 +67,7 @@ Llucs Hub is an evolution of **Infinity Yield**, with key enhancements:
 2. Paste the following command into the executor:
 
 ```lua
-loadstring(game:HttpGet("https://raw.githubusercontent.com/Llucs/Llucs-Hub/main/latest.lua"))()`
+loadstring(game:HttpGet("https://raw.githubusercontent.com/Llucs/Llucs-Hub/main/latest.lua"))()```
 
 3. Execute the command.
 
