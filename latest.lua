@@ -1,80 +1,97 @@
 -- Llucs Hub v1.5 -- Update Date: 16/07/2025
 
-local TweenService = game:GetService("TweenService") local g_players = game:GetService("Players") local g_runservice = game:GetService("RunService") local g_uis = game:GetService("UserInputService") local g_teleport = game:GetService("TeleportService") local g_coregui = game:GetService("CoreGui") local g_virtual = game:GetService("VirtualUser")
+-- Services local TweenService    = game:GetService("TweenService") local Players         = game:GetService("Players") local RunService      = game:GetService("RunService") local UserInput       = game:GetService("UserInputService") local TeleportService = game:GetService("TeleportService") local CoreGui         = game:GetService("CoreGui") local VirtualUser     = game:GetService("VirtualUser")
 
-local function g_str(len) local c = "" for _ = 1, len do c = c .. string.char(math.random(97, 122)) end return c end
+-- Utilities local function randomString(length) local result = "" for _ = 1, length do result = result .. string.char(math.random(97, 122)) end return result end
 
-local function safe_pcall(func, ...) local ok, result = pcall(func, ...) if not ok then warn("Llucs Hub: Error -", result) end return ok, result end
+local function safePcall(fn, ...) local ok, err = pcall(fn, ...) if not ok then warn("Llucs Hub Error:", err) end return ok, err end
 
-local function create_instance(className, props) local inst = Instance.new(className) for prop, val in pairs(props) do safe_pcall(function() inst[prop] = val end) end return inst end
+local function createInstance(className, props) local instance = Instance.new(className) for property, value in pairs(props) do safePcall(function() instance[property] = value end) end return instance end
 
-if not game:IsLoaded() then local msg = create_instance("Message", { Parent = g_coregui, Text = "Llucs Hub v1.5 loading game..." }) game.Loaded:Wait() safe_pcall(function() msg:Destroy() end) end
+-- Wait for game load if not game:IsLoaded() then local loadingMsg = createInstance("Message", { Parent = CoreGui, Text   = "Llucs Hub v1.5 loading..." }) game.Loaded:Wait() safePcall(function() loadingMsg:Destroy() end) end
 
--- Anti-AFK if not _G.llucs_antiafk then _G.llucs_antiafk = true g_players.LocalPlayer.Idled:Connect(function() g_virtual:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame) task.wait(1) g_virtual:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame) print("Llucs Hub: Anti-AFK triggered 💤") end) end
+-- Anti-AFK if not _G.llucsAntiAfk then _G.llucsAntiAfk = true Players.LocalPlayer.Idled:Connect(function() VirtualUser:Button2Down(Vector2.new(), workspace.CurrentCamera.CFrame) task.wait(1) VirtualUser:Button2Up(Vector2.new(), workspace.CurrentCamera.CFrame) print("Llucs Hub: Anti-AFK triggered") end) end
 
--- GUI Setup local parent_gui = g_players.LocalPlayer:WaitForChild("PlayerGui") local gui = create_instance("ScreenGui", { Name = g_str(10), ResetOnSpawn = false, Parent = nil })
+-- GUI Setup local playerGui = Players.LocalPlayer:WaitForChild("PlayerGui") local screenGui = createInstance("ScreenGui", { Name         = randomString(10), ResetOnSpawn = false, Parent       = playerGui })
 
-local frame = create_instance("Frame", { Size = UDim2.new(0, 360, 0, 520), Position = UDim2.new(0.5, -180, 0.5, -260), BackgroundColor3 = Color3.fromRGB(30, 30, 30), BorderSizePixel = 0, Active = true, Draggable = true, Parent = gui, Transparency = 1 })
+local frame = createInstance("Frame", { Size              = UDim2.new(0, 360, 0, 520), Position          = UDim2.new(1, -380, 1, -600), BackgroundColor3  = Color3.fromRGB(30, 30, 30), BorderSizePixel   = 0, Active            = true, Draggable         = true, Parent            = screenGui })
 
-local tween = TweenService:Create(frame, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Transparency = 0 }) tween:Play()
+createInstance("UICorner", { CornerRadius = UDim.new(0, 8), Parent       = frame })
 
-create_instance("TextLabel", { Text = "Llucs Hub v1.5", Size = UDim2.new(1, -40, 0, 30), BackgroundColor3 = Color3.fromRGB(20, 20, 20), TextColor3 = Color3.new(1, 1, 1), Font = Enum.Font.SourceSansBold, TextSize = 20, Parent = frame })
+-- Title and Controls local titleLabel = createInstance("TextLabel", { Name              = "TitleLabel", Text              = "Llucs Hub v1.5", Size              = UDim2.new(1, -120, 0, 30), BackgroundColor3  = Color3.fromRGB(20, 20, 20), Font              = Enum.Font.SourceSansBold, TextSize          = 20, Parent            = frame }) titleLabel.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then frame.Size = UDim2.new(0, 360, 0, 520) end end)
 
-create_instance("TextButton", { Text = "✖", Size = UDim2.new(0, 40, 0, 30), Position = UDim2.new(1, -40, 0, 0), BackgroundColor3 = Color3.fromRGB(180, 0, 0), TextColor3 = Color3.new(1, 1, 1), Font = Enum.Font.SourceSansBold, TextSize = 18, Parent = frame, MouseButton1Click = function() gui:Destroy() end })
+-- Command Input local commandBox = createInstance("TextBox", { Size = UDim2.new(1, -20, 0, 30), Position = UDim2.new(0, 10, 0, 35), Text = "Type command here...", BackgroundColor3 = Color3.fromRGB(50, 50, 50), TextColor3 = Color3.new(1, 1, 1), Font = Enum.Font.SourceSans, TextSize = 16, ClearTextOnFocus = true, Parent = frame })
 
-local cmd_box = create_instance("TextBox", { Size = UDim2.new(1, -20, 0, 30), Position = UDim2.new(0, 10, 0, 40), BackgroundColor3 = Color3.fromRGB(40, 40, 40), TextColor3 = Color3.new(1, 1, 1), Font = Enum.Font.SourceSans, TextSize = 16, ClearTextOnFocus = false, PlaceholderText = "Type a command...", Parent = frame })
+-- Command List local commandList = createInstance("TextLabel", { Size = UDim2.new(1, -20, 0, 120), Position = UDim2.new(0, 10, 0, 70), BackgroundTransparency = 1, TextColor3 = Color3.new(1, 1, 1), TextSize = 14, Font = Enum.Font.SourceSans, TextXAlignment = Enum.TextXAlignment.Left, TextYAlignment = Enum.TextYAlignment.Top, TextWrapped = true, Text = "Available commands:\nfly - Fly\nunfly - Stop flying\nspeed <number> - Set speed\njump <number> - Set jump power\nnoclip - Pass through walls\nreset - Reset character\nsit - Sit\ninvisible - Make character invisible", Parent = frame })
 
-local scroll = create_instance("ScrollingFrame", { Size = UDim2.new(1, -20, 1, -80), Position = UDim2.new(0, 10, 0, 80), BackgroundColor3 = Color3.fromRGB(35, 35, 35), BorderSizePixel = 0, CanvasSize = UDim2.new(0, 0, 0, 0), ScrollBarThickness = 6, Parent = frame })
+-- Output Label local outputLabel = createInstance("TextLabel", { Size = UDim2.new(1, -20, 0, 25), Position = UDim2.new(0, 10, 1, -30), BackgroundTransparency = 1, Text = "", TextColor3 = Color3.new(1, 1, 1), TextSize = 16, Parent = frame })
 
-local cmd_list = create_instance("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 4), Parent = scroll })
+local function executeCommand(cmd) local args = string.split(string.lower(cmd), " ") local plr = Players.LocalPlayer local char = plr.Character local hum = char and char:FindFirstChildOfClass("Humanoid")
 
--- Player helpers local function get_local_player() return g_players.LocalPlayer end local function get_character(player) return player.Character or player.CharacterAdded:Wait() end local function get_hrp(char) return char and char:FindFirstChild("HumanoidRootPart") end
-
--- Fly and noclip controls local function teleport(player, pos) local hrp = get_hrp(get_character(player)) if hrp then hrp.CFrame = CFrame.new(pos) end end
-
-local function set_noclip(player, enable) local char = get_character(player) for _, p in ipairs(char:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide = not enable end end end
-
-local fly_on, fly_conn = false, nil local function toggle_fly(player) local char = get_character(player) local hrp = get_hrp(char) local hum = char:FindFirstChildOfClass("Humanoid") if not char or not hrp or not hum then return end
-
-fly_on = not fly_on
-hum.PlatformStand = fly_on
-
-if fly_on then
-    local bv = create_instance("BodyVelocity", {
-        MaxForce = Vector3.new(1e9, 1e9, 1e9),
-        Velocity = Vector3.zero,
-        Parent = hrp
-    })
-    fly_conn = g_runservice.RenderStepped:Connect(function()
-        local dir = Vector3.zero
-        if g_uis:IsKeyDown(Enum.KeyCode.W) then dir += workspace.CurrentCamera.CFrame.LookVector end
-        if g_uis:IsKeyDown(Enum.KeyCode.S) then dir -= workspace.CurrentCamera.CFrame.LookVector end
-        if g_uis:IsKeyDown(Enum.KeyCode.A) then dir -= workspace.CurrentCamera.CFrame.RightVector end
-        if g_uis:IsKeyDown(Enum.KeyCode.D) then dir += workspace.CurrentCamera.CFrame.RightVector end
-        if g_uis:IsKeyDown(Enum.KeyCode.Space) then dir += Vector3.yAxis end
-        if g_uis:IsKeyDown(Enum.KeyCode.LeftControl) then dir -= Vector3.yAxis end
-        bv.Velocity = dir.Magnitude > 0 and dir.Unit * 60 or Vector3.zero
-    end)
-else
-    for _, v in ipairs(hrp:GetChildren()) do
-        if v:IsA("BodyVelocity") then v:Destroy() end
+if args[1] == "fly" then
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    if hrp then
+        local bp = Instance.new("BodyPosition")
+        bp.Name = "FlyBP"
+        bp.MaxForce = Vector3.new(1e5, 1e5, 1e5)
+        bp.Position = hrp.Position + Vector3.new(0, 5, 0)
+        bp.Parent = hrp
+        RunService.RenderStepped:Connect(function()
+            if bp and hrp then
+                bp.Position = hrp.Position + Vector3.new(0, 5, 0)
+            end
+        end)
+        outputLabel.Text = "[Llucs Hub] Fly enabled"
     end
-    if fly_conn then fly_conn:Disconnect(); fly_conn = nil end
+elseif args[1] == "unfly" then
+    local bp = char and char:FindFirstChild("HumanoidRootPart") and char.HumanoidRootPart:FindFirstChild("FlyBP")
+    if bp then bp:Destroy() end
+    outputLabel.Text = "[Llucs Hub] Fly disabled"
+elseif args[1] == "speed" and tonumber(args[2]) then
+    if hum then
+        hum.WalkSpeed = tonumber(args[2])
+        outputLabel.Text = "[Llucs Hub] Speed set to " .. args[2]
+    end
+elseif args[1] == "jump" and tonumber(args[2]) then
+    if hum then
+        hum.JumpPower = tonumber(args[2])
+        outputLabel.Text = "[Llucs Hub] JumpPower set to " .. args[2]
+    end
+elseif args[1] == "noclip" then
+    RunService.Stepped:Connect(function()
+        if char then
+            for _, v in pairs(char:GetDescendants()) do
+                if v:IsA("BasePart") then
+                    v.CanCollide = false
+                end
+            end
+        end
+    end)
+    outputLabel.Text = "[Llucs Hub] Noclip enabled"
+elseif args[1] == "reset" then
+    plr:LoadCharacter()
+    outputLabel.Text = "[Llucs Hub] Character reset"
+elseif args[1] == "sit" then
+    if hum then hum.Sit = true end
+    outputLabel.Text = "[Llucs Hub] Sitting"
+elseif args[1] == "invisible" then
+    if char then
+        for _, v in pairs(char:GetDescendants()) do
+            if v:IsA("BasePart") and v.Name ~= "HumanoidRootPart" then
+                v.Transparency = 1
+            elseif v:IsA("Decal") then
+                v.Transparency = 1
+            end
+        end
+    end
+    outputLabel.Text = "[Llucs Hub] You are now invisible"
+else
+    outputLabel.Text = "[Llucs Hub] Unknown command: " .. cmd
 end
 
 end
 
--- Command system local commands = {} local function register_command(name, func, desc) commands[name:lower()] = func local label = create_instance("TextLabel", { Text = "> " .. name .. " - " .. (desc or "No description"), Size = UDim2.new(1, 0, 0, 20), BackgroundTransparency = 1, TextColor3 = Color3.new(1, 1, 1), Font = Enum.Font.SourceSans, TextSize = 16, Parent = scroll }) end
+commandBox.FocusLost:Connect(function(enter) if enter and commandBox.Text ~= "" then executeCommand(commandBox.Text) commandBox.Text = "" end end)
 
-register_command("gui", function() if gui.Parent == nil then gui.Parent = parent_gui tween:Play() end end, "Opens the Llucs Hub GUI")
-
-register_command("tp", function(args) local x, y, z = tonumber(args[1]), tonumber(args[2]), tonumber(args[3]) if x and y and z then teleport(get_local_player(), Vector3.new(x, y, z)) end end, "Teleport to X Y Z")
-
-register_command("noclip", function() set_noclip(get_local_player(), true) end, "Enable noclip") register_command("clip", function() set_noclip(get_local_player(), false) end, "Disable noclip") register_command("fly", function() toggle_fly(get_local_player()) end, "Toggle fly mode") register_command("reset", function() get_local_player().Character:BreakJoints() end, "Reset character") register_command("rejoin", function() g_teleport:TeleportToPlaceInstance(game.PlaceId, game.JobId, get_local_player()) end, "Rejoin current server") register_command("speed", function(args) local val = tonumber(args[1]) if val then local hum = get_character(get_local_player()):FindFirstChildOfClass("Humanoid") if hum then hum.WalkSpeed = val end end end, "Set walk speed") register_command("jump", function(args) local val = tonumber(args[1]) if val then local hum = get_character(get_local_player()):FindFirstChildOfClass("Humanoid") if hum then hum.JumpPower = val end end end, "Set jump power") register_command("gravity", function(args) local val = tonumber(args[1]) if val then workspace.Gravity = val end end, "Set gravity") register_command("printplayers", function() for _, p in ipairs(g_players:GetPlayers()) do print(p.Name) end end, "Print all player names") register_command("unload", function() gui:Destroy() end, "Unload Llucs Hub") register_command("help", function() print("Available commands:") for name, _ in pairs(commands) do print(" -", name) end end, "List all commands")
-
--- Executor local function execute_command(txt) local parts = string.split(txt, " ") local name = table.remove(parts, 1):lower() local cmd = commands[name] if cmd then safe_pcall(cmd, parts) else warn("Unknown command:", name) end end
-
-cmd_box.FocusLost:Connect(function(enter) if enter then execute_command(cmd_box.Text) cmd_box.Text = "" end end)
-
-print("Llucs Hub v1.5 fully loaded ✨")
+print("Llucs Hub v1.5 fully loaded with extended command system ✨")
 
