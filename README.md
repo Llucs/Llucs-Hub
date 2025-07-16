@@ -61,12 +61,18 @@ Llucs Hub is an evolution of **Infinity Yield**, with key enhancements:
 
 ---
 
-## 📁 How to Install
+## 📁 How to Install and Use Llucs Hub
 
-1. Copy the **Llucs Hub v1.3** script (or newer)
-2. Paste it into your Roblox script executor
-3. Run the script
-4. Type `gui` in the command box to open the interface
+1. Open your Roblox script executor.  
+2. Paste the following command into the executor:
+
+`lua
+loadstring(game:HttpGet("https://raw.githubusercontent.com/Llucs/Llucs-Hub/main/latest.lua"))()`
+
+3. Execute the command.
+
+
+4. Once the script loads, type gui in the command box to open the Llucs Hub interface.
 
 ---
 
