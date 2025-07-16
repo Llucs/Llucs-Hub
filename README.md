@@ -91,3 +91,6 @@ Llucs Hub is an evolution of **Infinity Yield**, with key enhancements:
 💬 Focused on powerful tools with simple UI and strong protection systems
 
 ---
+
+Last Update: 16/07/25
+Version: v1.3
