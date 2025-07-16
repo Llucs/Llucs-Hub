@@ -70,9 +70,24 @@ local frame = create_instance("Frame", {
     Parent = gui
 })
 
+-- Close button
+create_instance("TextButton", {
+    Text = "X",
+    Size = UDim2.new(0, 30, 0, 30),
+    Position = UDim2.new(1, -30, 0, 0),
+    BackgroundColor3 = Color3.fromRGB(150, 0, 0),
+    TextColor3 = Color3.new(1, 1, 1),
+    Font = Enum.Font.SourceSansBold,
+    TextSize = 16,
+    Parent = frame,
+    MouseButton1Click = function()
+        gui:Destroy()
+    end
+})
+
 create_instance("TextLabel", {
     Text = "Llucs Hub v1.3",
-    Size = UDim2.new(1, 0, 0, 30),
+    Size = UDim2.new(1, -30, 0, 30),
     BackgroundColor3 = Color3.fromRGB(15, 15, 15),
     TextColor3 = Color3.new(1, 1, 1),
     Font = Enum.Font.SourceSansBold,
@@ -99,7 +114,7 @@ local function get_character(player)
 end
 
 local function get_hrp(character)
-    return character:FindFirstChild("HumanoidRootPart")
+    return character and character:FindFirstChild("HumanoidRootPart")
 end
 
 local function teleport(player, position)
@@ -112,6 +127,7 @@ end
 
 local function set_noclip(player, enabled)
     local char = get_character(player)
+    if not char then return end
     for _, part in ipairs(char:GetChildren()) do
         if part:IsA("BasePart") then
             part.CanCollide = not enabled
@@ -125,8 +141,8 @@ local fly_conn = nil
 local function toggle_fly(player)
     local char = get_character(player)
     local hrp = get_hrp(char)
-    local hum = char:FindFirstChildOfClass("Humanoid")
-    if not hrp or not hum then return end
+    local hum = char and char:FindFirstChildOfClass("Humanoid")
+    if not char or not hrp or not hum then return end
 
     fly_on = not fly_on
     hum.PlatformStand = fly_on
@@ -145,11 +161,7 @@ local function toggle_fly(player)
             if g_uis:IsKeyDown(Enum.KeyCode.D) then dir += workspace.CurrentCamera.CFrame.RightVector end
             if g_uis:IsKeyDown(Enum.KeyCode.Space) then dir += Vector3.yAxis end
             if g_uis:IsKeyDown(Enum.KeyCode.LeftControl) then dir -= Vector3.yAxis end
-            if dir.Magnitude > 0 then
-                bv.Velocity = dir.Unit * 60
-            else
-                bv.Velocity = Vector3.zero
-            end
+            bv.Velocity = dir.Magnitude > 0 and dir.Unit * 60 or Vector3.zero
         end)
     else
         for _, v in pairs(hrp:GetChildren()) do
@@ -165,7 +177,10 @@ end
 -- Main commands
 local function cmd_tp(args)
     if #args == 3 then
-        teleport(get_local_player(), Vector3.new(tonumber(args[1]), tonumber(args[2]), tonumber(args[3])))
+        local x, y, z = tonumber(args[1]), tonumber(args[2]), tonumber(args[3])
+        if x and y and z then
+            teleport(get_local_player(), Vector3.new(x, y, z))
+        end
     end
 end
 
@@ -190,22 +205,25 @@ local function cmd_unload()
 end
 
 local function cmd_speed(args)
-    local hum = get_character(get_local_player()):FindFirstChildOfClass("Humanoid")
-    if hum and args[1] then
-        hum.WalkSpeed = tonumber(args[1])
+    local value = tonumber(args[1])
+    if value then
+        local hum = get_character(get_local_player()):FindFirstChildOfClass("Humanoid")
+        if hum then hum.WalkSpeed = value end
     end
 end
 
 local function cmd_gravity(args)
-    if args[1] then
-        workspace.Gravity = tonumber(args[1])
+    local value = tonumber(args[1])
+    if value then
+        workspace.Gravity = value
     end
 end
 
 local function cmd_jump(args)
-    local hum = get_character(get_local_player()):FindFirstChildOfClass("Humanoid")
-    if hum and args[1] then
-        hum.JumpPower = tonumber(args[1])
+    local value = tonumber(args[1])
+    if value then
+        local hum = get_character(get_local_player()):FindFirstChildOfClass("Humanoid")
+        if hum then hum.JumpPower = value end
     end
 end
 
@@ -248,7 +266,8 @@ local function cmd_bang(args)
         bang_loop = g_runservice.RenderStepped:Connect(function()
             safe_pcall(function()
                 local me = get_character(get_local_player())
-                local them_hrp = get_hrp(get_character(victim))
+                local them = get_character(victim)
+                local them_hrp = get_hrp(them)
                 local me_hrp = get_hrp(me)
                 if them_hrp and me_hrp then
                     me_hrp.CFrame = them_hrp.CFrame * CFrame.new(0, 0, 1)
@@ -263,8 +282,11 @@ local function cmd_view(args)
     if args[1] then
         for _, p in ipairs(g_players:GetPlayers()) do
             if p.Name:lower():sub(1, #args[1]) == args[1]:lower() then
-                workspace.CurrentCamera.CameraSubject = p.Character:FindFirstChild("Humanoid")
-                print("Viewing:", p.Name)
+                local hum = p.Character and p.Character:FindFirstChild("Humanoid")
+                if hum then
+                    workspace.CurrentCamera.CameraSubject = hum
+                    print("Viewing:", p.Name)
+                end
                 break
             end
         end
