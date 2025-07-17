@@ -1,223 +1,72 @@
--- Llucs Hub v1.5 -- Update Date: 16/07/2025
+-- Llucs Hub v1.6 -- Updated on: 17/07/2025
 
--- Services
-local TweenService    = game:GetService("TweenService")
-local Players         = game:GetService("Players")
-local RunService      = game:GetService("RunService")
-local UserInput       = game:GetService("UserInputService")
-local TeleportService = game:GetService("TeleportService")
-local CoreGui         = game:GetService("CoreGui")
-local VirtualUser     = game:GetService("VirtualUser")
+-- Services local TweenService = game:GetService("TweenService") local Players = game:GetService("Players") local RunService = game:GetService("RunService") local UIS = game:GetService("UserInputService") local CoreGui = game:GetService("CoreGui")
 
--- Utilities
-local function randomString(length)
-    local result = ""
-    for _ = 1, length do
-        result = result .. string.char(math.random(97, 122))
-    end
-    return result
-end
+-- Variables local LocalPlayer = Players.LocalPlayer local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait() local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart") local GUI_Minimized = false local AutoMinimize = true local Theme = "Dark"
 
-local function safePcall(fn, ...)
-    local ok, err = pcall(fn, ...)
-    if not ok then
-        warn("Llucs Hub Error:", err)
-    end
-    return ok, err
-end
+-- Create GUI local ScreenGui = Instance.new("ScreenGui") ScreenGui.Name = "LlucsHub" ScreenGui.Parent = CoreGui ScreenGui.ResetOnSpawn = false
 
-local function createInstance(className, props)
-    local instance = Instance.new(className)
-    for property, value in pairs(props) do
-        safePcall(function()
-            instance[property] = value
-        end)
-    end
-    return instance
-end
+local MainFrame = Instance.new("Frame") MainFrame.Name = "MainFrame" MainFrame.Size = UDim2.new(0, 400, 0, 260) MainFrame.Position = UDim2.new(1, -420, 1, -300) MainFrame.AnchorPoint = Vector2.new(1, 1) MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30) MainFrame.BorderSizePixel = 0 MainFrame.ClipsDescendants = true MainFrame.Parent = ScreenGui MainFrame.BackgroundTransparency = 0.05 MainFrame.Visible = true MainFrame.Active = true MainFrame.Draggable = true MainFrame.AutomaticSize = Enum.AutomaticSize.Y
 
--- Wait for game load
-if not game:IsLoaded() then
-    local loadingMsg = createInstance("Message", {
-        Parent = CoreGui,
-        Text   = "Llucs Hub v1.5 loading..."
-    })
-    game.Loaded:Wait()
-    safePcall(function() loadingMsg:Destroy() end)
-end
+local Title = Instance.new("TextLabel") Title.Size = UDim2.new(1, 0, 0, 30) Title.BackgroundTransparency = 1 Title.Text = "Llucs Hub v1.6" Title.TextSize = 20 Title.TextColor3 = Color3.fromRGB(255, 255, 255) Title.Font = Enum.Font.GothamBold Title.Parent = MainFrame
 
--- Anti-AFK
-if not _G.llucsAntiAfk then
-    _G.llucsAntiAfk = true
-    Players.LocalPlayer.Idled:Connect(function()
-        VirtualUser:Button2Down(Vector2.new(), workspace.CurrentCamera.CFrame)
-        task.wait(1)
-        VirtualUser:Button2Up(Vector2.new(), workspace.CurrentCamera.CFrame)
-        print("Llucs Hub: Anti-AFK triggered")
-    end)
-end
+-- Minimize, Close, and Settings Buttons local CloseButton = Instance.new("TextButton") CloseButton.Size = UDim2.new(0, 30, 0, 30) CloseButton.Position = UDim2.new(1, -30, 0, 0) CloseButton.Text = "X" CloseButton.TextColor3 = Color3.fromRGB(255, 100, 100) CloseButton.BackgroundTransparency = 1 CloseButton.Font = Enum.Font.GothamBold CloseButton.TextSize = 18 CloseButton.Parent = MainFrame CloseButton.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 
--- GUI Setup
-local playerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
-local screenGui = createInstance("ScreenGui", {
-    Name         = randomString(10),
-    ResetOnSpawn = false,
-    Parent       = playerGui
-})
+local MinimizeButton = Instance.new("TextButton") MinimizeButton.Size = UDim2.new(0, 30, 0, 30) MinimizeButton.Position = UDim2.new(1, -60, 0, 0) MinimizeButton.Text = "-" MinimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255) MinimizeButton.BackgroundTransparency = 1 MinimizeButton.Font = Enum.Font.GothamBold MinimizeButton.TextSize = 18 MinimizeButton.Parent = MainFrame MinimizeButton.MouseButton1Click:Connect(function() GUI_Minimized = not GUI_Minimized local goal = {} goal.Size = GUI_Minimized and UDim2.new(0, 400, 0, 30) or UDim2.new(0, 400, 0, 260) TweenService:Create(MainFrame, TweenInfo.new(0.4, Enum.EasingStyle.Quad), goal):Play() end)
 
-local frame = createInstance("Frame", {
-    Size              = UDim2.new(0, 360, 0, 520),
-    Position          = UDim2.new(1, -380, 1, -600),
-    BackgroundColor3  = Color3.fromRGB(30, 30, 30), -- Default: Dark mode
-    BorderSizePixel   = 0,
-    Active            = true,
-    Draggable         = true,
-    Parent            = screenGui
-})
+local SettingsButton = Instance.new("TextButton") SettingsButton.Size = UDim2.new(0, 30, 0, 30) SettingsButton.Position = UDim2.new(0, 0, 0, 0) SettingsButton.Text = "⚙" SettingsButton.TextColor3 = Color3.fromRGB(255, 255, 255) SettingsButton.BackgroundTransparency = 1 SettingsButton.Font = Enum.Font.GothamBold SettingsButton.TextSize = 18 SettingsButton.Parent = MainFrame
 
-createInstance("UICorner", {
-    CornerRadius = UDim.new(0, 8),
-    Parent       = frame
-})
+local SettingsFrame = Instance.new("Frame") SettingsFrame.Size = UDim2.new(1, -10, 0, 80) SettingsFrame.Position = UDim2.new(0, 5, 0, 40) SettingsFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40) SettingsFrame.Visible = false SettingsFrame.Parent = MainFrame
 
--- Title
-local titleLabel = createInstance("TextLabel", {
-    Name              = "TitleLabel",
-    Text              = "Llucs Hub v1.5",
-    Size              = UDim2.new(1, -120, 0, 30),
-    BackgroundColor3  = Color3.fromRGB(20, 20, 20),
-    Font              = Enum.Font.SourceSansBold,
-    TextSize          = 20,
-    TextColor3        = Color3.new(1, 1, 1),
-    Parent            = frame
-})
-titleLabel.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        frame.Size = UDim2.new(0, 360, 0, 520)
-    end
-end)
+local ThemeToggle = Instance.new("TextButton") ThemeToggle.Size = UDim2.new(1, -10, 0, 30) ThemeToggle.Position = UDim2.new(0, 5, 0, 5) ThemeToggle.Text = "Toggle Theme" ThemeToggle.BackgroundColor3 = Color3.fromRGB(60, 60, 60) ThemeToggle.TextColor3 = Color3.fromRGB(255, 255, 255) ThemeToggle.Font = Enum.Font.Gotham ThemeToggle.TextSize = 16 ThemeToggle.Parent = SettingsFrame ThemeToggle.MouseButton1Click:Connect(function() Theme = (Theme == "Dark") and "Light" or "Dark" MainFrame.BackgroundColor3 = (Theme == "Dark") and Color3.fromRGB(30, 30, 30) or Color3.fromRGB(220, 220, 220) end)
 
--- Command Input Box
-local commandBox = createInstance("TextBox", {
-    Name              = "CommandBox",
-    Size              = UDim2.new(1, -20, 0, 30),
-    Position          = UDim2.new(0, 10, 0, 35),
-    Text              = "Type command here...",
-    BackgroundColor3  = Color3.fromRGB(50, 50, 50),
-    TextColor3        = Color3.new(1, 1, 1),
-    Font              = Enum.Font.SourceSans,
-    TextSize          = 16,
-    ClearTextOnFocus  = true,
-    Parent            = frame
-})
+local AutoCloseToggle = Instance.new("TextButton") AutoCloseToggle.Size = UDim2.new(1, -10, 0, 30) AutoCloseToggle.Position = UDim2.new(0, 5, 0, 40) AutoCloseToggle.Text = "Toggle Auto-Close" AutoCloseToggle.BackgroundColor3 = Color3.fromRGB(60, 60, 60) AutoCloseToggle.TextColor3 = Color3.fromRGB(255, 255, 255) AutoCloseToggle.Font = Enum.Font.Gotham AutoCloseToggle.TextSize = 16 AutoCloseToggle.Parent = SettingsFrame AutoCloseToggle.MouseButton1Click:Connect(function() AutoMinimize = not AutoMinimize end)
 
--- Command List Display
-local commandList = createInstance("TextLabel", {
-    Size               = UDim2.new(1, -20, 0, 120),
-    Position           = UDim2.new(0, 10, 0, 70),
-    BackgroundTransparency = 1,
-    TextColor3         = Color3.new(1, 1, 1),
-    TextSize           = 14,
-    Font               = Enum.Font.SourceSans,
-    TextXAlignment     = Enum.TextXAlignment.Left,
-    TextYAlignment     = Enum.TextYAlignment.Top,
-    TextWrapped        = true,
-    Text               = "Available commands:\nfly - Fly\nunfly - Stop flying\nspeed <number> - Set speed\njump <number> - Set jump power\nnoclip - Pass through walls\nreset - Reset character\nsit - Sit\ninvisible - Make character invisible",
-    Parent             = frame
-})
+SettingsButton.MouseButton1Click:Connect(function() SettingsFrame.Visible = not SettingsFrame.Visible end)
 
--- Output label
-local outputLabel = createInstance("TextLabel", {
-    Size               = UDim2.new(1, -20, 0, 25),
-    Position           = UDim2.new(0, 10, 1, -30),
-    BackgroundTransparency = 1,
-    Text               = "",
-    TextColor3         = Color3.new(1, 1, 1),
-    TextSize           = 16,
-    Font               = Enum.Font.SourceSans,
-    Parent             = frame
-})
+Title.MouseButton1Click:Connect(function() if GUI_Minimized then GUI_Minimized = false TweenService:Create(MainFrame, TweenInfo.new(0.4), {Size = UDim2.new(0, 400, 0, 260)}):Play() end end)
 
--- Main Command Handler
-local function executeCommand(cmd)
-    local args = string.split(string.lower(cmd), " ")
-    local plr = Players.LocalPlayer
-    local char = plr and plr.Character
-    local hum = char and char:FindFirstChildOfClass("Humanoid")
+-- Command input local CommandBox = Instance.new("TextBox") CommandBox.Size = UDim2.new(1, -20, 0, 30) CommandBox.Position = UDim2.new(0, 10, 0, 140) CommandBox.PlaceholderText = "Enter command..." CommandBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50) CommandBox.TextColor3 = Color3.fromRGB(255, 255, 255) CommandBox.Font = Enum.Font.Gotham CommandBox.TextSize = 16 CommandBox.Parent = MainFrame
 
-    if not (plr and char and hum) then
-        outputLabel.Text = "[Llucs Hub] Player or character not ready"
-        return
-    end
+-- Commands local Commands = { fly = function() local flying = true local speed = 50 local bodyGyro = Instance.new("BodyGyro") local bodyVelocity = Instance.new("BodyVelocity")
 
-    if args[1] == "fly" then
-        local hrp = char:FindFirstChild("HumanoidRootPart")
-        if hrp then
-            local bp = Instance.new("BodyPosition")
-            bp.Name = "FlyBP"
-            bp.MaxForce = Vector3.new(1e5, 1e5, 1e5)
-            bp.Position = hrp.Position + Vector3.new(0, 5, 0)
-            bp.Parent = hrp
+bodyGyro.P = 9e4
+    bodyGyro.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+    bodyGyro.CFrame = HumanoidRootPart.CFrame
+    bodyGyro.Parent = HumanoidRootPart
 
-            RunService.RenderStepped:Connect(function()
-                if bp and hrp then
-                    bp.Position = hrp.Position + Vector3.new(0, 5, 0)
-                end
-            end)
-            outputLabel.Text = "[Llucs Hub] Fly enabled"
-        end
+    bodyVelocity.Velocity = Vector3.new(0, 0, 0)
+    bodyVelocity.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+    bodyVelocity.Parent = HumanoidRootPart
 
-    elseif args[1] == "unfly" then
-        local bp = char:FindFirstChild("HumanoidRootPart") and char.HumanoidRootPart:FindFirstChild("FlyBP")
-        if bp then bp:Destroy() end
-        outputLabel.Text = "[Llucs Hub] Fly disabled"
-
-    elseif args[1] == "speed" and tonumber(args[2]) then
-        hum.WalkSpeed = tonumber(args[2])
-        outputLabel.Text = "[Llucs Hub] Speed set to " .. args[2]
-
-    elseif args[1] == "jump" and tonumber(args[2]) then
-        hum.JumpPower = tonumber(args[2])
-        outputLabel.Text = "[Llucs Hub] JumpPower set to " .. args[2]
-
-    elseif args[1] == "noclip" then
-        RunService.Stepped:Connect(function()
-            for _, v in pairs(char:GetDescendants()) do
-                if v:IsA("BasePart") then
-                    v.CanCollide = false
-                end
-            end
-        end)
-        outputLabel.Text = "[Llucs Hub] Noclip enabled"
-
-    elseif args[1] == "reset" then
-        plr:LoadCharacter()
-        outputLabel.Text = "[Llucs Hub] Character reset"
-
-    elseif args[1] == "sit" then
-        hum.Sit = true
-        outputLabel.Text = "[Llucs Hub] Sitting"
-
-    elseif args[1] == "invisible" then
-        for _, v in pairs(char:GetDescendants()) do
-            if v:IsA("BasePart") and v.Name ~= "HumanoidRootPart" then
-                v.Transparency = 1
-            elseif v:IsA("Decal") then
-                v.Transparency = 1
-            end
-        end
-        outputLabel.Text = "[Llucs Hub] You are now invisible"
-
-    else
-        outputLabel.Text = "[Llucs Hub] Unknown command: " .. cmd
-    end
-end
-
--- Safe binding to FocusLost
-if commandBox then
-    commandBox.FocusLost:Connect(function(enterPressed)
-        if enterPressed and commandBox.Text ~= "" then
-            executeCommand(commandBox.Text)
+    UIS.InputBegan:Connect(function(input)
+        if input.KeyCode == Enum.KeyCode.Space then
+            bodyVelocity.Velocity = HumanoidRootPart.CFrame.UpVector * speed
+        elseif input.KeyCode == Enum.KeyCode.W then
+            bodyVelocity.Velocity = HumanoidRootPart.CFrame.LookVector * speed
+        elseif input.KeyCode == Enum.KeyCode.S then
+            bodyVelocity.Velocity = -HumanoidRootPart.CFrame.LookVector * speed
+        elseif input.KeyCode == Enum.KeyCode.A then
+            bodyVelocity.Velocity = -HumanoidRootPart.CFrame.RightVector * speed
+        elseif input.KeyCode == Enum.KeyCode.D then
+            bodyVelocity.Velocity = HumanoidRootPart.CFrame.RightVector * speed
         end
     end)
+
+    UIS.InputEnded:Connect(function()
+        bodyVelocity.Velocity = Vector3.new(0, 0, 0)
+    end)
+end,
+jumpboost = function()
+    local humanoid = Character:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        humanoid.JumpPower = 150
+    end
 end
+
+}
+
+CommandBox.FocusLost:Connect(function(enterPressed) if enterPressed then local input = CommandBox.Text:lower() CommandBox.Text = "" if Commands[input] then Commandsinput end end end)
+
+-- Auto minimize task.spawn(function() while true do task.wait(10) if AutoMinimize and not GUI_Minimized then GUI_Minimized = true TweenService:Create(MainFrame, TweenInfo.new(0.4), {Size = UDim2.new(0, 400, 0, 30)}):Play() end end end)
+
