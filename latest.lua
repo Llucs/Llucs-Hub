@@ -218,3 +218,6 @@ if commandBox then
     commandBox.FocusLost:Connect(function(enterPressed)
         if enterPressed and commandBox.Text ~= "" then
             executeCommand(commandBox.Text)
+        end
+    end)
+end
