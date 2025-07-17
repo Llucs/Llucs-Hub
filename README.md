@@ -77,6 +77,10 @@ Llucs Hub is an evolution of **Infinity Yield**, with key enhancements:
 
 ---
 
+### ⚠️ AT THIS TIME LLUCS HUB IS HAVING PROBLEMS AND IS UNDER MAINTENANCE, PLEASE WAIT WHILE THE ERRORS ARE CORRECTED ⚠️
+
+---
+
 ## 📌 Disclaimer
 
 > This script is for educational and experimental purposes only. Usage is your own responsibility. Always respect Roblox's Terms of Service.
