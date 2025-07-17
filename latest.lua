@@ -66,7 +66,7 @@ end
 
 }
 
-CommandBox.FocusLost:Connect(function(enterPressed) if enterPressed then local input = CommandBox.Text:lower() CommandBox.Text = "" if Commands[input] then Commandsinput end end end)
+CommandBox.FocusLost:Connect(function(enterPressed) if enterPressed then local input = CommandBox.Text:lower() CommandBox.Text = "" if Commands[input] then Commands[input]() end end end)
 
 -- Auto minimize task.spawn(function() while true do task.wait(10) if AutoMinimize and not GUI_Minimized then GUI_Minimized = true TweenService:Create(MainFrame, TweenInfo.new(0.4), {Size = UDim2.new(0, 400, 0, 30)}):Play() end end end)
 
